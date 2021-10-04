@@ -47,17 +47,13 @@ public class EightPuzzleDemo {
 						+ "/_______  /|__|/_____/   |__|  |___|  /     |____|    |____/ /_____ \\/_____ \\|____/ \\___  > \n"
 						+ "        \\/                          \\/                             \\/      \\/           \\/  ");
 		eightPuzzleAStarNullHeuristicDemo();
-		eightPuzzleAStarWeightedMisplacedDemo();
-		eightPuzzleAStarWeightedManhattanDemo();
-		eightPuzzleAStarWeightedNonConsistentHeuristicDemo();
-		eightPuzzleAStarEpsilonWeightedManhattanDemo();
-		// eightPuzzleDLSDemo();
-		// eightPuzzleIDLSDemo();
-		// eightPuzzleGreedyBestFirstDemo();
-		// eightPuzzleGreedyBestFirstManhattanDemo();
-		eightPuzzleAStarDemo();
-		// eightPuzzleAStarManhattanDemo();
-		// eightPuzzleSimulatedAnnealingDemo();
+//		eightPuzzleAStarWeightedMisplacedDemo();
+//		eightPuzzleAStarWeightedManhattanDemo();
+//		eightPuzzleAStarWeightedNonConsistentHeuristicDemo();
+//		eightPuzzleAStarEpsilonWeightedManhattanDemo();
+		
+		//eightPuzzleAStarDemo();
+	
 	}
 
 	
