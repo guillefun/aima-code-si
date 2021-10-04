@@ -1,4 +1,14 @@
-# ![](https://github.com/aimacode/aima-java/blob/gh-pages/aima3e/images/aima3e.jpg)AIMA3e-Java (JDK 8+) [![Build Status](https://travis-ci.org/aimacode/aima-java.svg?branch=AIMA3e)](https://travis-ci.org/aimacode/aima-java) [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/aimacode/aima-java/AIMA3e)
+# AIMA-JAVA Intelligent Systems
+
+An implementation based on the [Aima3-Java](https://github.com/aimacode/aima-java/wiki/AIMA3e-Overview) code, used for the working sessions of the Intelligent Systems course from the **Ingeniería Informática del Software** degree of the **University of Oviedo**.
+
+🌚
+
+
+## AIMA3e-Java (JDK 8+) [![Build Status](https://travis-ci.org/aimacode/aima-java.svg?branch=AIMA3e)](https://travis-ci.org/aimacode/aima-java) [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/aimacode/aima-java/AIMA3e)
+
+
+
 Java implementation of algorithms from [Russell](http://www.cs.berkeley.edu/~russell/) and [Norvig's](http://www.norvig.com/) [Artificial Intelligence - A Modern Approach 3rd Edition](http://aima.cs.berkeley.edu/). You can use this in conjunction with a course on AI, or for study on your own. We're looking for [solid contributors](https://github.com/aimacode/aima-java/wiki/AIMAJava-Contributing) to help.
 
 ### Getting Started Links 
