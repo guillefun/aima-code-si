@@ -59,7 +59,7 @@ public class NQueensBoard {
 				addQueenAt(new XYLocation(col, r.nextInt(size)));
 		}else if(config == Config.QUEEN_IN_EVERY_COL_AND_EVERY_ROW) {
 			Random r = new Random();
-			boolean[] visited_rows = new boolean[size];
+			
 			ArrayList<Integer> numbers = new ArrayList<>();
 			for(int n = 0; n<size;n++) {
 				numbers.add(n);
@@ -68,7 +68,6 @@ public class NQueensBoard {
 				
 				int pos = r.nextInt(numbers.size());
 				addQueenAt(new XYLocation(col, numbers.get(pos)));
-				
 				
 			}
 			System.out.println(squares);
