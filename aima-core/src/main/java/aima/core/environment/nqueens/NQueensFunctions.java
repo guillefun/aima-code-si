@@ -100,4 +100,20 @@ public class NQueensFunctions {
     public static double getNumberOfAttackingPairs(Node<NQueensBoard, QueenAction> node) {
         return node.getState().getNumberOfAttackingPairs();
     }
+    
+    public static int nullHeuristic(Node<NQueensBoard, QueenAction> node) {
+    	return 0;
+    	}
+    
+    public static int getNumberOfAttackedPairs(Node<NQueensBoard, QueenAction> node) {
+    	return node.getState().getNumberOfAttackedPairs();
+    }
+    
+    public static int getMaximumNumberOfQueensAlignedMinusOne(Node<NQueensBoard, QueenAction> node) {
+    	return 0;
+    }
+    
+    public static int getClassHeuristic(Node<NQueensBoard, QueenAction> node) {
+    	return node.getState().getNumberOfClassHeuristic();
+    }
 }

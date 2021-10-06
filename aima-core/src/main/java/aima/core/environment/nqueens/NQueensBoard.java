@@ -17,7 +17,7 @@ public class NQueensBoard {
 
 	/** Parameters for initialization. */
 	public enum Config {
-		EMPTY, QUEENS_IN_FIRST_ROW, QUEEN_IN_EVERY_COL
+		EMPTY, QUEENS_IN_FIRST_ROW, QUEEN_IN_EVERY_COL, QUEEN_IN_EVERY_COL_AND_EVERY_ROW
 	}
 
 	/**
@@ -57,6 +57,21 @@ public class NQueensBoard {
 			Random r = new Random();
 			for (int col = 0; col < size; col++)
 				addQueenAt(new XYLocation(col, r.nextInt(size)));
+		}else if(config == Config.QUEEN_IN_EVERY_COL_AND_EVERY_ROW) {
+			Random r = new Random();
+			boolean[] visited_rows = new boolean[size];
+			ArrayList<Integer> numbers = new ArrayList<>();
+			for(int n = 0; n<size;n++) {
+				numbers.add(n);
+			}
+			for(int col=0;col<size;col++) {
+				
+				int pos = r.nextInt(numbers.size());
+				addQueenAt(new XYLocation(col, numbers.get(pos)));
+				
+				
+			}
+			System.out.println(squares);
 		}
 	}
 
@@ -138,7 +153,18 @@ public class NQueensBoard {
 	public int getNumberOfAttackingPairs() {
 		return getQueenPositions().stream().mapToInt(this::getNumberOfAttacksOn).sum() / 2;
 	}
-
+	
+	public int getNumberOfAttackedPairs() {
+		return getQueenPositions().stream().mapToInt(this::getNumberOfAttacksOn).sum() / 2;
+	}
+    
+	public int getNumberOfClassHeuristic() {
+		int n = getSize();
+		int k = getNumberOfQueensOnBoard();
+		
+		return (n-k)*((getNumberOfQueensOnBoard()*2/getNumberOfAttackedPairs()));
+	}
+	
 	public int getNumberOfAttacksOn(XYLocation l) {
 		int x = l.getX();
 		int y = l.getY();

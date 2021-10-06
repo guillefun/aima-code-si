@@ -73,7 +73,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 		// initialize the frontier using the initial state of the problem
 		Node<S, A> root = nodeFactory.createNode(problem.getInitialState());
 		addToFrontier(root);
-	
+		
 		if (earlyGoalTest && problem.testSolution(root)) {
 			Instant finish = Instant.now();
 			metrics.set(METRIC_TIME_TAKEN, Duration.between(start, finish).toMillis());
@@ -85,6 +85,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 		while (!isFrontierEmpty() && !Tasks.currIsCancelled()) {
 			// choose a leaf node and remove it from the frontier
 			Node<S, A> node = removeFromFrontier();
+		//	System.out.println( node.getState());
 			// if the node contains a goal state then return the corresponding solution
 			
 			if (evalFn != null)
