@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import aima.core.util.datastructure.XYLocation;
+import si.utils.NumberUtils;
 
 /**
  * Represents a quadratic board with a matrix of squares on which queens can be
@@ -21,15 +22,15 @@ public class NQueensBoard {
 	}
 
 	/**
-	 * X (first index, col) increases left to right with zero based index,
-	 * Y (second index, row) increases top to bottom with zero based index.
-	 * A queen at position (x, y) is indicated by value true.
+	 * X (first index, col) increases left to right with zero based index, Y (second
+	 * index, row) increases top to bottom with zero based index. A queen at
+	 * position (x, y) is indicated by value true.
 	 */
 	private boolean[][] squares;
 
 	/**
-	 * Creates a board with <code>size</code> rows and size columns. Column and
-	 * row indices start with 0.
+	 * Creates a board with <code>size</code> rows and size columns. Column and row
+	 * indices start with 0.
 	 */
 	public NQueensBoard(int size) {
 		squares = new boolean[size][size];
@@ -41,12 +42,11 @@ public class NQueensBoard {
 	}
 
 	/**
-	 * Creates a board with <code>size</code> rows and size columns. Column and
-	 * row indices start with 0.
+	 * Creates a board with <code>size</code> rows and size columns. Column and row
+	 * indices start with 0.
 	 * 
-	 * @param config
-	 *            Controls whether the board is initially empty or contains some
-	 *            queens.
+	 * @param config Controls whether the board is initially empty or contains some
+	 *               queens.
 	 */
 	public NQueensBoard(int size, Config config) {
 		this(size);
@@ -57,18 +57,16 @@ public class NQueensBoard {
 			Random r = new Random();
 			for (int col = 0; col < size; col++)
 				addQueenAt(new XYLocation(col, r.nextInt(size)));
-		}else if(config == Config.QUEEN_IN_EVERY_COL_AND_EVERY_ROW) {
+		} else if (config == Config.QUEEN_IN_EVERY_COL_AND_EVERY_ROW) {
 			Random r = new Random();
-			
 			ArrayList<Integer> numbers = new ArrayList<>();
-			for(int n = 0; n<size;n++) {
+			for (int n = 0; n < size; n++) {
 				numbers.add(n);
 			}
-			for(int col=0;col<size;col++) {
-				
+			for (int col = 0; col < size; col++) {
 				int pos = r.nextInt(numbers.size());
 				addQueenAt(new XYLocation(col, numbers.get(pos)));
-				
+				numbers.remove(pos);
 			}
 			System.out.println(squares);
 		}
@@ -101,8 +99,8 @@ public class NQueensBoard {
 	}
 
 	/**
-	 * Moves the queen in the specified column (x-value of <code>l</code>) to
-	 * the specified row (y-value of <code>l</code>). The action assumes a
+	 * Moves the queen in the specified column (x-value of <code>l</code>) to the
+	 * specified row (y-value of <code>l</code>). The action assumes a
 	 * complete-state formulation of the n-queens problem.
 	 */
 	public void moveQueenTo(XYLocation l) {
@@ -152,18 +150,54 @@ public class NQueensBoard {
 	public int getNumberOfAttackingPairs() {
 		return getQueenPositions().stream().mapToInt(this::getNumberOfAttacksOn).sum() / 2;
 	}
-	
-	public int getNumberOfAttackedPairs() {
-		return getQueenPositions().stream().mapToInt(this::getNumberOfAttacksOn).sum() / 2;
+
+	public int getNumberOfAttackedQueens() {
+		List<XYLocation> list = getQueenPositions();
+		int result = 0;
+		for (XYLocation l : list) {
+			if (getNumberOfAttacksOn(l) > 0) {
+				result++;
+			}
+		}
+		return result;
+
+		// return
+		// getQueenPositions().stream().mapToInt(this::getNumberOfAttacksOn).sum() / 2;
 	}
-    
+
 	public int getNumberOfClassHeuristic() {
 		int n = getSize();
 		int k = getNumberOfQueensOnBoard();
-		
-		return (n-k)*((getNumberOfQueensOnBoard()*2/getNumberOfAttackedPairs()));
+
+		return (n - k) * ((getNumberOfQueensOnBoard() * 2 / getNumberOfAttackedQueens()));
 	}
-	
+
+	public int getNumberOfAlignedQueens() {
+		return 0;
+	}
+
+	public double getQueensRemainBoard() {
+		return getSize() - getNumberOfQueensOnBoard();
+	}
+
+	public double getProbabilisticEstimation() {
+		return ((double) (getSize() - getNumberOfQueensOnBoard()) * (1 - p()));
+	}
+
+	private double p() {
+		if (getNumberOfQueensOnBoard() == getSize()) {
+			return 1.0;
+		} else
+			return (double) getNumberOfNonAttackedPositions()
+					/ (double) ((getSize() - getNumberOfQueensOnBoard() * getSize())); // 1.5-> solo para pruebas 1
+																						// comprobar el peso de p(n) de
+																						// la fórmula
+	}
+
+	public int getNumberOfNonAttackedPositions() {
+		return getSize() - getNumberOfQueensOnBoard();
+	}
+
 	public int getNumberOfAttacksOn(XYLocation l) {
 		int x = l.getX();
 		int y = l.getY();
@@ -236,6 +270,42 @@ public class NQueensBoard {
 		return result;
 	}
 
+	private int numberOfDiagonalAttacksOnLeft(int x, int y) {
+		int result = 0;
+		int col;
+		int row;
+		
+		// backward up diagonal
+		for (col = (x - 1), row = (y - 1); ((col > -1) && (row > -1)); col--, row--)
+			if (queenExistsAt(col, row))
+				result++;
+
+		// backward down diagonal
+		for (col = (x - 1), row = (y + 1); ((col > -1) && (row < getSize())); col--, row++)
+			if (queenExistsAt(col, row))
+				result++;
+
+		return result;
+	}
+
+	private int numberOfDiagonalAttacksOnRight(int x,int y) {
+		int result = 0;
+		int col;
+		int row;
+		// forward up diagonal
+		for (col = (x + 1), row = (y - 1); (col < getSize() && (row > -1)); col++, row--)
+			if (queenExistsAt(col, row))
+				result++;
+
+		// forward down diagonal
+		for (col = (x + 1), row = (y + 1); ((col < getSize()) && (row < getSize())); col++, row++)
+			if (queenExistsAt(col, row))
+				result++;
+		
+		return result;
+	}
+	
+	
 	@Override
 	public int hashCode() {
 		int result = 0;
@@ -277,4 +347,26 @@ public class NQueensBoard {
 		}
 		return builder.toString();
 	}
+
+	public int getMaximumNumberOfQueensAlignedMinusOne() {
+		int maxAligned = 0;
+		for (XYLocation position : getQueenPositions()) {
+			int best = maxNumberofAttacksOnSingleDirection(position);
+			if (best > maxAligned)
+				maxAligned = best;
+		}
+		return maxAligned;
+	}
+
+	public int maxNumberofAttacksOnSingleDirection(XYLocation position) {
+		int h = numberOfHorizontalAttacksOn(position.getX(), position.getY());
+		int v = numberOfVerticalAttacksOn(position.getX(), position.getY());
+		int d1 = numberOfDiagonalAttacksOnLeft(position.getX(), position.getY());
+		int d2 = numberOfDiagonalAttacksOnRight(position.getX(),position.getY());
+		
+		return NumberUtils.max(h,v, d1,d2);
+
+	}
+
+
 }

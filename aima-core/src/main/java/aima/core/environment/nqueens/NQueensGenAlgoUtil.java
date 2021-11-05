@@ -2,6 +2,7 @@ package aima.core.environment.nqueens;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
@@ -24,7 +25,8 @@ import aima.core.util.datastructure.XYLocation;
 public class NQueensGenAlgoUtil {
 
 	public static FitnessFunction<Integer> getFitnessFunction() {
-		return new NQueensFitnessFunction();
+//		return new NQueensFitnessFunction();
+		return new NQueensFitnessQueenFunction();
 	}
 	
 	public static Predicate<Individual<Integer>> getGoalTest() {
@@ -36,6 +38,7 @@ public class NQueensGenAlgoUtil {
 		List<Integer> individualRepresentation = new ArrayList<>();
 		for (int i = 0; i < boardSize; i++) {
 			individualRepresentation.add(new Random().nextInt(boardSize));
+			Collections.shuffle(individualRepresentation);
 		}
 		return new Individual<>(individualRepresentation);
 	}
@@ -96,6 +99,69 @@ public class NQueensGenAlgoUtil {
 		}
 	}
 
+	// EJERCICIO 8 SESSION 4
+	public static class NQueensFitnessQueenFunction implements FitnessFunction<Integer> {
+
+		public double apply(Individual<Integer> individual) {
+			double fitness = 0;
+
+			NQueensBoard board = getBoardForIndividual(individual);
+			int boardSize = board.getSize();
+
+			List<XYLocation> qPositions = board.getQueenPositions();
+			
+			for (XYLocation l : qPositions) {
+				int x = l.getX();
+				int y = l.getY();
+				
+				int horizontal = 0;
+				for (int col = 0; col < boardSize; col++) {
+					if ((board.queenExistsAt(new XYLocation(col, y))))
+						if (col != x)
+							horizontal++;
+				}
+				
+				int vertical = 0;
+				for (int row = 0; row < boardSize; row++) {
+					if ((board.queenExistsAt(new XYLocation(x, row))))
+						if (row != y)
+							vertical++;
+				}
+				
+				int diagonal = 0;
+				int col;
+				int row;
+				// forward up diagonal
+				for (col = (x + 1), row = (y - 1); (col < boardSize && (row > -1)); col++, row--)
+					if ((board.queenExistsAt(new XYLocation(col, row))))
+						diagonal++;
+
+				// forward down diagonal
+				for (col = (x + 1), row = (y + 1); ((col < boardSize) && (row < boardSize)); col++, row++)
+					if ((board.queenExistsAt(new XYLocation(col, row))))
+						diagonal++;
+
+				// backward up diagonal
+				for (col = (x - 1), row = (y - 1); ((col > -1) && (row > -1)); col--, row--)
+					if ((board.queenExistsAt(new XYLocation(col, row))))
+						diagonal++;
+
+				// backward down diagonal
+				for (col = (x - 1), row = (y + 1); ((col > -1) && (row < boardSize)); col--, row++)
+					if ((board.queenExistsAt(new XYLocation(col, row))))
+						diagonal++;
+				
+				if((vertical+horizontal+diagonal)==0) {
+					fitness += 1.0;
+				}
+			}
+
+			return fitness;
+		}
+		
+	
+	}
+	
 	public static class NQueensGenAlgoGoalTest implements Predicate<Individual<Integer>> {
 		private final Predicate<NQueensBoard> goalTest = NQueensFunctions::testGoal;
 

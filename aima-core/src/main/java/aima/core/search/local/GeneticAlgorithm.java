@@ -47,8 +47,7 @@ import java.util.function.Predicate;
  * @author Mike Stampone
  * @author Ruediger Lunde
  * 
- * @param <A>
- *            the type of the alphabet used in the representation of the
+ * @param <A> the type of the alphabet used in the representation of the
  *            individuals in the population (this is to provide flexibility in
  *            terms of how a problem can be encoded).
  */
@@ -62,12 +61,16 @@ public class GeneticAlgorithm<A> {
 	protected int individualLength;
 	protected List<A> finiteAlphabet;
 	protected double mutationProbability;
+	protected double crossoverProbability;
 	
 	protected Random random;
 	private List<ProgressTracker<A>> progressTrackers = new ArrayList<>();
 
 	public GeneticAlgorithm(int individualLength, Collection<A> finiteAlphabet, double mutationProbability) {
 		this(individualLength, finiteAlphabet, mutationProbability, new Random());
+	}
+	public GeneticAlgorithm(int individualLength, Collection<A> finiteAlphabet, double mutationProbability, double crossoverProbability) {
+		this(individualLength, finiteAlphabet, mutationProbability,crossoverProbability, new Random());
 	}
 
 	public GeneticAlgorithm(int individualLength, Collection<A> finiteAlphabet, double mutationProbability,
@@ -79,38 +82,48 @@ public class GeneticAlgorithm<A> {
 
 		assert (this.mutationProbability >= 0.0 && this.mutationProbability <= 1.0);
 	}
+	
+	public GeneticAlgorithm(int individualLength, Collection<A> finiteAlphabet, double mutationProbability,double crossoverProbability,
+			Random random) {
+		this.individualLength = individualLength;
+		this.finiteAlphabet = new ArrayList<A>(finiteAlphabet);
+		this.mutationProbability = mutationProbability;
+		this.crossoverProbability = crossoverProbability;
+		this.random = random;
+
+		assert (this.mutationProbability >= 0.0 && this.mutationProbability <= 1.0);
+		assert (this.crossoverProbability >= 0.0 && this.crossoverProbability <= 1.0);
+	}
 
 	/** Progress tracers can be used to display progress information. */
 	public void addProgressTracer(ProgressTracker<A> pTracker) {
 		progressTrackers.add(pTracker);
 	}
-	
+
 	/**
 	 * Starts the genetic algorithm and stops after a specified number of
 	 * iterations.
 	 */
-	public Individual<A> geneticAlgorithm(Collection<Individual<A>> initPopulation,
-			FitnessFunction<A> fitnessFn, final int maxIterations) {
+	public Individual<A> geneticAlgorithm(Collection<Individual<A>> initPopulation, FitnessFunction<A> fitnessFn,
+			final int maxIterations) {
 		Predicate<Individual<A>> goalTest = state -> getIterations() >= maxIterations;
 		return geneticAlgorithm(initPopulation, fitnessFn, goalTest, 0L);
 	}
-	
+
 	/**
 	 * Template method controlling search. It returns the best individual in the
-	 * specified population, according to the specified FITNESS-FN and goal
-	 * test.
+	 * specified population, according to the specified FITNESS-FN and goal test.
 	 * 
-	 * @param initPopulation
-	 *            a set of individuals
-	 * @param fitnessFn
-	 *            a function that measures the fitness of an individual
-	 * @param goalTest
-	 *            test determines whether a given individual is fit enough to
-	 *            return. Can be used in subclasses to implement additional
-	 *            termination criteria, e.g. maximum number of iterations.
-	 * @param maxTimeMilliseconds
-	 *            the maximum time in milliseconds that the algorithm is to run
-	 *            for (approximate). Only used if > 0L.
+	 * @param initPopulation      a set of individuals
+	 * @param fitnessFn           a function that measures the fitness of an
+	 *                            individual
+	 * @param goalTest            test determines whether a given individual is fit
+	 *                            enough to return. Can be used in subclasses to
+	 *                            implement additional termination criteria, e.g.
+	 *                            maximum number of iterations.
+	 * @param maxTimeMilliseconds the maximum time in milliseconds that the
+	 *                            algorithm is to run for (approximate). Only used
+	 *                            if > 0L.
 	 * @return the best individual in the specified population, according to the
 	 *         specified FITNESS-FN and goal test.
 	 */
@@ -118,7 +131,7 @@ public class GeneticAlgorithm<A> {
 	// inputs: population, a set of individuals
 	// FITNESS-FN, a function that measures the fitness of an individual
 	public Individual<A> geneticAlgorithm(Collection<Individual<A>> initPopulation, FitnessFunction<A> fitnessFn,
-										  Predicate<Individual<A>> goalTest, long maxTimeMilliseconds) {
+			Predicate<Individual<A>> goalTest, long maxTimeMilliseconds) {
 		Individual<A> bestIndividual = null;
 
 		// Create a local copy of the population to work with
@@ -131,8 +144,11 @@ public class GeneticAlgorithm<A> {
 
 		// repeat
 		int itCount = 0;
+		bestIndividual = retrieveBestIndividual(population, fitnessFn);
+		System.out.println("\nGEN" + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
+		+ " BestFitness: " + fitnessFn.apply(bestIndividual));
 		do {
-			population = nextGeneration(population, fitnessFn);
+			population = nextGeneration(population, fitnessFn, bestIndividual); //PASAR EL BEST INDIVIDUAL
 			bestIndividual = retrieveBestIndividual(population, fitnessFn);
 
 			updateMetrics(population, ++itCount, System.currentTimeMillis() - startTime);
@@ -148,7 +164,15 @@ public class GeneticAlgorithm<A> {
 		// return the best individual in population, according to FITNESS-FN
 		return bestIndividual;
 	}
-
+	
+	private double averageFitness(List<Individual<A>> population, FitnessFunction<A> fitnessFn) {
+		double accfValue = 0.0;
+		for (Individual<A> individual : population) {
+			accfValue += fitnessFn.apply(individual);
+		}
+		return accfValue / population.size();
+	}
+	
 	public Individual<A> retrieveBestIndividual(Collection<Individual<A>> population, FitnessFunction<A> fitnessFn) {
 		Individual<A> bestIndividual = null;
 		double bestSoFarFValue = Double.NEGATIVE_INFINITY;
@@ -209,10 +233,8 @@ public class GeneticAlgorithm<A> {
 	/**
 	 * Updates statistic data collected during search.
 	 * 
-	 * @param itCount
-	 *            the number of iterations.
-	 * @param time
-	 *            the time in milliseconds that the genetic algorithm took.
+	 * @param itCount the number of iterations.
+	 * @param time    the time in milliseconds that the genetic algorithm took.
 	 */
 	protected void updateMetrics(Collection<Individual<A>> population, int itCount, long time) {
 		metrics.set(POPULATION_SIZE, population.size());
@@ -227,31 +249,44 @@ public class GeneticAlgorithm<A> {
 	// behavior.
 	//
 	/**
-	 * Primitive operation which is responsible for creating the next
-	 * generation. Override to get progress information!
+	 * Primitive operation which is responsible for creating the next generation.
+	 * Override to get progress information!
 	 */
-	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn) {
+	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn, Individual<A> bestBefore) {
 		// new_population <- empty set
 		List<Individual<A>> newPopulation = new ArrayList<>(population.size());
+
+		// ELITISMO
+		// Individual<A> bestInd = retrieveBestIndividual(population, ...)
+		// newPopulation.add(bestIndividual());
 		// for i = 1 to SIZE(population) do
-		for (int i = 0; i < population.size(); i++) {
+		for (int i = 0; i < population.size()-1; i++) {
 			// x <- RANDOM-SELECTION(population, FITNESS-FN)
 			Individual<A> x = randomSelection(population, fitnessFn);
 			// y <- RANDOM-SELECTION(population, FITNESS-FN)
 			Individual<A> y = randomSelection(population, fitnessFn);
-			// child <- REPRODUCE(x, y)
-			Individual<A> child = reproduce(x, y);
+			
+			Individual<A> child;
+			if(random.nextDouble() <= crossoverProbability) {
+				child = x;
+			}else {
+				// child <- REPRODUCE(x, y)
+				child = reproduceOX(x, y);
+			}
+			
 			// if (small random probability) then child <- MUTATE(child)
 			if (random.nextDouble() <= mutationProbability) {
-				child = mutate(child);
+				child = mutateRandom(child);
 			}
-			// add child to new_population
+			// add child to new_population. Reemplazo incondicional, los hijos reemplazan a
+			// los padres, es decir el rremplazo no produce presion selectiva
 			newPopulation.add(child);
 		}
+		newPopulation.add(bestBefore);
 		notifyProgressTrackers(getIterations(), population);
 		return newPopulation;
 	}
-
+	// EJERCICIO 6 SESSION 4
 	// RANDOM-SELECTION(population, FITNESS-FN)
 	protected Individual<A> randomSelection(List<Individual<A>> population, FitnessFunction<A> fitnessFn) {
 		// Default result is last individual
@@ -259,10 +294,20 @@ public class GeneticAlgorithm<A> {
 		Individual<A> selected = population.get(population.size() - 1);
 
 		// Determine all of the fitness values
+		double minFitness = Double.MAX_VALUE;
 		double[] fValues = new double[population.size()];
+		
 		for (int i = 0; i < population.size(); i++) {
 			fValues[i] = fitnessFn.apply(population.get(i));
+			if(fValues[i]<minFitness) minFitness = fValues[i]; // buscamos el fitness del peor
 		}
+		
+		
+		 for(int i=0; i<population.size();i++) {
+			fValues[i] -= minFitness;
+			fValues[i] = Math.pow(fValues[i], 2); //elevar al cuadrado los fitness para darle mas importancia a los buenos, a los chads 😎 
+		}
+		 
 		// Normalize the fitness values
 		fValues = Util.normalize(fValues);
 		double prob = random.nextDouble();
@@ -281,6 +326,34 @@ public class GeneticAlgorithm<A> {
 		return selected;
 	}
 
+
+	/*
+	 * EJERCICIO 3 SESSION 4
+	 */
+	protected Individual<A> reproduceOX(Individual<A> firstParent, Individual<A> secondParent) {
+		int individualLength = firstParent.length();
+		
+		int p1= randomOffset(individualLength);
+		int p2 = randomOffset(individualLength);
+		
+		List<A> firstParentArray = firstParent.getRepresentation();
+		List<A> secondParentArray = secondParent.getRepresentation();
+		
+		List<A> childRepresentation = new ArrayList<A>(firstParentArray);
+		
+		int k = p2;
+		
+		for (int i = 0; i < individualLength; i++) {
+			int j = p1;
+			while(j<p2+(p2 <= p1 ? individualLength : 0) && secondParentArray.get(i) != firstParentArray.get(j%individualLength))
+				j++;
+			if(j==p2+(p2<=p1 ? individualLength : 0)) {
+				childRepresentation.set(k % individualLength, secondParentArray.get(i));
+				k++;
+			}
+		}
+		return new Individual<A>(childRepresentation);
+	}
 	// function REPRODUCE(x, y) returns an individual
 	// inputs: x, y, parent individuals
 	protected Individual<A> reproduce(Individual<A> x, Individual<A> y) {
@@ -305,8 +378,28 @@ public class GeneticAlgorithm<A> {
 		mutatedRepresentation.set(mutateOffset, finiteAlphabet.get(alphaOffset));
 
 		return new Individual<A>(mutatedRepresentation);
-}
+	}
+	
+	/*
+	 * EJERCICIO 4 SESSION 4
+	 */
+	protected Individual<A> mutateRandom(Individual<A> child) {
+		int individualLength = child.length();
+		
+		int p = randomOffset(individualLength);
+		int c = randomOffset(individualLength);
 
+		List<A> mutatedRepresentation = new ArrayList<A>(child.getRepresentation());
+		
+		A temp = mutatedRepresentation.get(p);
+		
+		mutatedRepresentation.set(p, mutatedRepresentation.get(c));
+		mutatedRepresentation.set(c, temp);
+		
+		return new Individual<A>(mutatedRepresentation);
+	}
+
+	
 	protected int randomOffset(int length) {
 		return random.nextInt(length);
 	}
@@ -326,12 +419,12 @@ public class GeneticAlgorithm<A> {
 			}
 		}
 	}
-	
+
 	private void notifyProgressTrackers(int itCount, Collection<Individual<A>> generation) {
 		for (ProgressTracker<A> tracer : progressTrackers)
 			tracer.trackProgress(getIterations(), generation);
 	}
-	
+
 	/**
 	 * Interface for progress tracers.
 	 * 

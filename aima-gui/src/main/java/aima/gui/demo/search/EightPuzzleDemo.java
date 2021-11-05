@@ -46,22 +46,21 @@ public class EightPuzzleDemo {
 						+ " |        \\|  | \\___  /  |  |  |   Y  \\     |    |    |  |  / /    /  /    / |  |__\\  ___/  \n"
 						+ "/_______  /|__|/_____/   |__|  |___|  /     |____|    |____/ /_____ \\/_____ \\|____/ \\___  > \n"
 						+ "        \\/                          \\/                             \\/      \\/           \\/  ");
-		eightPuzzleAStarNullHeuristicDemo();
+		System.out.print(goal);
+//		eightPuzzleAStarNullHeuristicDemo();
 //		eightPuzzleAStarWeightedMisplacedDemo();
 //		eightPuzzleAStarWeightedManhattanDemo();
 //		eightPuzzleAStarWeightedNonConsistentHeuristicDemo();
 //		eightPuzzleAStarEpsilonWeightedManhattanDemo();
-		
-		//eightPuzzleAStarDemo();
-	
+
+		// eightPuzzleAStarDemo();
+
 	}
 
-	
-	//HEURISTIC H(OBJETIVO) = 0 G(INICIAL)=0 F(OBJETIVO)=C*
-	//H MONOTONO, AL EXPANDIR N ---> G(N) = G*(N) ---+ F*<=C*
-	//C* = F*(INICIAL)=H*(INICIAL)
-	
-	
+	// HEURISTIC H(OBJETIVO) = 0 G(INICIAL)=0 F(OBJETIVO)=C*
+	// H MONOTONO, AL EXPANDIR N ---> G(N) = G*(N) ---+ F*<=C*
+	// C* = F*(INICIAL)=H*(INICIAL)
+
 	private static void eightPuzzleAStarEpsilonWeightedManhattanDemo() {
 		System.out.println("\nEightPuzzleDemo AStar Search (MisplacedTileHeursitic)");
 		System.out.println("Initial State:\n" + exTest);

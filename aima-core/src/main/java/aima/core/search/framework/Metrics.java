@@ -55,6 +55,10 @@ public class Metrics {
 	public Set<String> keySet() {
 		return hash.keySet();
 	}
+	
+	public Hashtable<String, String> getAll(){
+		return hash;
+	};
 
 	/** Sorts the key-value pairs by key names and formats them as equations. */
 	public String toString() {

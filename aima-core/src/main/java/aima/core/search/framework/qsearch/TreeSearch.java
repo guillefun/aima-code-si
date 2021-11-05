@@ -96,6 +96,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 				Instant finish = Instant.now();
 				metrics.set(METRIC_TIME_TAKEN, Duration.between(start, finish).toMillis());
 				
+				System.out.println(node.getState());
 				return asOptional(node);
 
 			}
